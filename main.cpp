@@ -19,7 +19,6 @@ constexpr auto armor = 0xFC;
 constexpr auto mtpAmmo = 0x150;
 constexpr auto nameOffsetWithinPadding = 0x0225;
 
-// ascii logo
 std::vector<std::string> logo{
 	"            _ _ _            _     ",
 	" __   _____(_) | |_ ___  ___| |__  ",
@@ -41,9 +40,8 @@ int main()
 {
 	Memory memory{ "ac_client.exe" };
 	const auto ModuleBaseAddress = memory.GetModuleAddress("ac_client.exe");
-
-	// dereference the pointer
 	const auto localPlayerAddress = memory.Read<std::uintptr_t>(ModuleBaseAddress + localPlayer);
+
 	const auto healthAddress = localPlayerAddress + health;
 	const auto armorAddress = localPlayerAddress + armor;
 	const auto mtpAmmoAddress = localPlayerAddress + mtpAmmo;
@@ -53,9 +51,7 @@ int main()
 
 	std::cout << std::endl;
 	for (const auto& line : logo)
-	{
 		std::cout << cyan << line << std::endl;
-	}
 
 	std::cout << std::endl << yellow << "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << reset << std::endl;
 
@@ -67,29 +63,11 @@ int main()
 
 	while (true)
 	{
-		//if (GetAsyncKeyState(VK_F1) & 0x8000)
-		//	memory.Write<int>(healthAddress, 999999);
-		//else if (GetAsyncKeyState(VK_F2) & 0x8000)
-		//	memory.Write<int>(armorAddress, 999999);
-		//else if (GetAsyncKeyState(VK_F3) & 0x8000)
-		//	memory.Write<int>(mtpAmmoAddress, 999999);
-
-		if (GetAsyncKeyState(VK_F1) & 0x8000)
-		{
-			memory.Write<int>(healthAddress, 999999);
-			std::cout << "health changed" << std::endl;
-		}
-		else if (GetAsyncKeyState(VK_F2) & 0x8000)
-		{
-			memory.Write<int>(armorAddress, 999999);
-			std::cout << "armor changed" << std::endl;
-		}
-		else if (GetAsyncKeyState(VK_F3) & 0x8000)
-		{
-			memory.Write<int>(mtpAmmoAddress, 999999);
-			std::cout << "ammo changed" << std::endl;
-		}
-
+		if (GetAsyncKeyState(VK_F1) & 0x8000) { memory.Write<int>(healthAddress, 1000); std::cout << red << "health changed" << std::endl; }
+		else if (GetAsyncKeyState(VK_F2) & 0x8000) { memory.Write<int>(armorAddress, 1000); std::cout << red << "armor changed" << std::endl; }
+		else if (GetAsyncKeyState(VK_F3) & 0x8000) { memory.Write<int>(mtpAmmoAddress, 1000); std::cout << red << "ammo changed" << std::endl; }
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+
+	return 0;
 }
