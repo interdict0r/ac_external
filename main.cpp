@@ -1,5 +1,6 @@
-#include "utilities/memory.h";
+#include "utilities/memory.h"
 #include <iostream>
+#include <string>
 #include <vector>
 #include <thread>
 
@@ -38,36 +39,61 @@ public:
 
 int main()
 {
-	Memory memory{ "ac_client.exe" };
+	Memory memory{"ac_client.exe"};
 	const auto ModuleBaseAddress = memory.GetModuleAddress("ac_client.exe");
 	const auto localPlayerAddress = memory.Read<std::uintptr_t>(ModuleBaseAddress + localPlayer);
+
+	if (!ModuleBaseAddress)
+	{
+		std::cerr << red <<"[!] No ModuleBaseAddress found: " + std::to_string(GetLastError());
+		std::cin.get();
+		return -1;
+	}
 
 	const auto healthAddress = localPlayerAddress + health;
 	const auto armorAddress = localPlayerAddress + armor;
 	const auto mtpAmmoAddress = localPlayerAddress + mtpAmmo;
 	const auto nameAddress = localPlayerAddress + nameOffsetWithinPadding;
 
+	if (!healthAddress || !armorAddress || !mtpAmmoAddress || !nameAddress)
+	{
+		std::cerr << "[!] Could not get address: " + std::to_string(GetLastError()) << '\n';
+		std::cin.get();
+		return -1;
+	}
+
+
 	std::string name = memory.Read<NamePadding>(nameAddress).preNamePadding_0000;
 
-	std::cout << std::endl;
+	std::cout << '\n';
 	for (const auto& line : logo)
-		std::cout << cyan << line << std::endl;
+		std::cout << cyan << line << '\n';
 
-	std::cout << std::endl << yellow << "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << reset << std::endl;
+	std::cout << '\n' << yellow << "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << reset << '\n';
 
-	std::cout << std::endl;
-	std::cout << "entry confirmed, " << magenta << name << "\n" << reset << green << std::endl;
-	std::cout << green << "f1 : max health " << std::endl;
-	std::cout << green << "f2 : max armor " << std::endl;
-	std::cout << green << "f1 : max ammo  " << std::endl;
+	std::cout << '\n';
+	std::cout << "entry confirmed, " << magenta << name << "\n" << reset << green << '\n';
+	std::cout << green << "f1 : max health " << '\n';
+	std::cout << green << "f2 : max armor " << '\n';
+	std::cout << green << "f1 : max ammo  " << '\n';
 
 	while (true)
 	{
-		if (GetAsyncKeyState(VK_F1) & 0x8000) { memory.Write<int>(healthAddress, 1000); std::cout << red << "health changed" << std::endl; }
-		else if (GetAsyncKeyState(VK_F2) & 0x8000) { memory.Write<int>(armorAddress, 1000); std::cout << red << "armor changed" << std::endl; }
-		else if (GetAsyncKeyState(VK_F3) & 0x8000) { memory.Write<int>(mtpAmmoAddress, 1000); std::cout << red << "ammo changed" << std::endl; }
+		if (GetAsyncKeyState(VK_F1) & 0x8000)
+		{
+			memory.Write<int>(healthAddress, 1000);
+			std::cout << red << "health changed" << '\n';
+		}
+		else if (GetAsyncKeyState(VK_F2) & 0x8000)
+		{
+			memory.Write<int>(armorAddress, 1000);
+			std::cout << red << "armor changed" << '\n';
+		}
+		else if (GetAsyncKeyState(VK_F3) & 0x8000)
+		{
+			memory.Write<int>(mtpAmmoAddress, 1000);
+			std::cout << red << "ammo changed" << '\n';
+		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
-
-	return 0;
 }
